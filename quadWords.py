@@ -150,6 +150,25 @@ def scoreWord(word,wChar):
                 score += 1
     return score
 
+def inChar (msg,myChar):
+    tmpChar = input(msg)
+    tmpLen = len(tmpChar)
+    if tmpLen > 0:
+        if tmpChar[0].isnumeric() or tmpChar[0] == 'z':
+            if tmpChar[0:2] == 'zz':
+                if tmpLen > 2:
+                    myChar = tmpChar[2-len(tmpChar):]
+                else:
+                    myChar = ''
+            else:
+                myChar = myChar + tmpChar
+            return (myChar)
+        else:
+            return(myChar)
+    else:
+        return(myChar)
+
+
 wCharDefault = 'qypfgjzxbn'
 yCharDefault = '2u5s'
 gCharDefault = '1s4l5k'
@@ -183,17 +202,18 @@ for k in range (n,10):
     for nQuard in range (1,5):
         if not bSuccess[nQuard]:
             if k > 1:
-                yCharIn= input(str(nQuard) + ", Yellow Tiles, like: "+ yChar[nQuard] + "\n")
-                gCharIn= input(str(nQuard) + ", Green Tiles, like: " + gChar[nQuard] + "\n")
+                msg = str(nQuard) + ", Yellow Tiles, like, " + yChar[nQuard] + ":"
+                yCharIn = inChar(msg, yChar[nQuard])
+                msg = str(nQuard) + ", Green Tiles, like, " + gChar[nQuard] + ":"
+                gCharIn = inChar(msg, gChar[nQuard])
             else:
                 yCharIn = ''
                 gCharIn = ''
+            yChar[nQuard] = yCharIn
+            gChar[nQuard] = gCharIn
 
-            yChar[nQuard] = yChar[nQuard] + yCharIn
-            gChar[nQuard] = gChar[nQuard] + gCharIn
-
-            # print ('yChar', yChar[nQuard])
-            # print ('gChar', gChar[nQuard])
+            #print('yChar', yChar[nQuard])
+            #print('gChar', gChar[nQuard])
 
             #if wChar == '':
             #    wChar = wCharDefault
@@ -206,8 +226,10 @@ for k in range (n,10):
             # print(k, nQuard,pool[nQuard])
             # print(k, nQuard, confirmedChars[nQuard])
 
+    for nQuard in range(1, 5):
+        if not bSuccess[nQuard]:
             if k > 1:
-                print ("Guessing...")
+                print("Guessing " + str(nQuard) + "...")
                 wordList = clue(pool[nQuard],confirmedChars[nQuard],dict)
                 #dict = list2dict(wordList)
                 nLen = len(wordList)
@@ -219,19 +241,19 @@ for k in range (n,10):
                     score = scoreWord(word,wChar)
                     if nLen <= 2:
                         score = 51 - nLen
-                        print (word, score)
+                        # print (word, score)
                     tmpWord = {"score": score,"guess":word}
                     newList.append(tmpWord)
     i=0
     for singleWord in sorted(newList,key = lambda  i:(-i['score'],i['guess'])):
-        print(i,singleWord)
+        print(i+1,singleWord["guess"], singleWord["score"])
         i = i+1
-        if i >= 10:
+        if i >= 5:
             break
 
     if k <= 9:
-        guessWord = input ("Round " + str(k) +" Guess: \n")
-        nSuccess = int(input("Is it the correct Guess? Enter 1, 2, 3 or 4 \n"))
+        guessWord = input ("Round " + str(k) +" Guess: ")
+        nSuccess = int(input("Is it the correct Guess? Enter 1, 2, 3 or 4."))
 
         if nSuccess >= 1 and nSuccess <= 4:
             bSuccess[nSuccess] = True
