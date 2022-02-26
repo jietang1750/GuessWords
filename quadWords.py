@@ -229,6 +229,8 @@ for k in range (n,10):
     for nQuard in range(1, 5):
         if not bSuccess[nQuard]:
             if k > 1:
+                # print(pool[nQuard])
+                # print(confirmedChars[nQuard])
                 print("Guessing " + str(nQuard) + "...")
                 wordList = clue(pool[nQuard],confirmedChars[nQuard],dict)
                 #dict = list2dict(wordList)
