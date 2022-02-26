@@ -4,7 +4,6 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 import json
-import Levenshtein as lev
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
@@ -151,9 +150,6 @@ def scoreWord(word,wChar):
                 score += 1
     return score
 
-#guess = input("Enter your 5 letter word guess:")
-#print (guess)
-
 wCharDefault = 'qypfgjzxbn'
 yCharDefault = '2u5s'
 gCharDefault = '1s4l5k'
@@ -163,12 +159,11 @@ with open(filename, 'r') as file:
     dict = json.load(file)
 file.close
 
-n = int(input("Your Wordle Round\n"))
-
+n = int(input("Your Quordle Round\n"))
 
 wChar = 'abcdefghijklmnopqrstuvwxyz'
 if n > 1:
-    wChar= input("White Keys, like: "+ wChar +"\n")
+    wChar = input("White Keys, like: "+ wChar +"\n")
 
 yChar = {}
 gChar = {}
@@ -208,8 +203,8 @@ for k in range (n,10):
             #    gChar = gCharDefault
             (pool[nQuard],confirmedChars[nQuard]) = formPool(wChar,yChar[nQuard],gChar[nQuard])
 
-            # print(nQuard,pool[nQuard])
-            # print (nQuard, confirmedChars[nQuard])
+            # print(k, nQuard,pool[nQuard])
+            # print(k, nQuard, confirmedChars[nQuard])
 
             if k > 1:
                 print ("Guessing...")
