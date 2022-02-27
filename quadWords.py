@@ -231,11 +231,18 @@ for k in range (n,10):
             if k > 1:
                 # print(pool[nQuard])
                 # print(confirmedChars[nQuard])
-                print("Guessing " + str(nQuard) + "...")
-                wordList = clue(pool[nQuard],confirmedChars[nQuard],dict)
-                #dict = list2dict(wordList)
-                nLen = len(wordList)
-                print (nLen, "words found.")
+                bGuess = True
+                for n in range(1,nQuard):
+                    if pool[n] == pool[nQuard] and confirmedChars[n] == confirmedChars[nQuard]:
+                        bGuess = False
+                        wordList = []
+                        break
+                if bGuess:
+                    print("Guessing " + str(nQuard) + "...")
+                    wordList = clue(pool[nQuard],confirmedChars[nQuard],dict)
+                    #dict = list2dict(wordList)
+                    nLen = len(wordList)
+                    print (nLen, "words found.")
                 i=0
                 tmpWord = {}
                 for word in wordList:
