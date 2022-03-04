@@ -154,13 +154,13 @@ def inChar (msg,myChar):
     else:
         return(myChar)
 
-def guessWord(totGames,totRounds,dict5):
+def guessWord(totGames,totRounds,strGame,dict5):
     wCharDefault = 'qypfgjzxbn'
     yCharDefault = '2u5s'
     gCharDefault = '1s4l5k'
 
 
-    n = int(input("Your Quordle Round\n"))
+    n = int(input("Your " + strGame + " Round\n"))
 
     wChar = 'abcdefghijklmnopqrstuvwxyz'
     if n > 1:
@@ -243,8 +243,21 @@ def guessWord(totGames,totRounds,dict5):
                 break
 
         if k <= totRounds:
+            tmpStr = ''
+            if totGames == 1:
+                tmpStr = ' 1.'
+            else:
+                for i in bSuccess.keys():
+                    if bSuccess[i] == False:
+                        tmpStr = tmpStr + str(i)
+                        if i == totGames - 1:
+                            tmpStr = tmpStr + ' or '
+                        elif i == totGames:
+                            tmpStr = tmpStr + '.'
+                        else:
+                            tmpStr = tmpStr + ', '
             guessWord = input ("Round " + str(k) +" Guess: ")
-            nSuccess = int(input("Is it the correct Guess? Enter 1, 2, 3 or 4."))
+            nSuccess = int(input("Is it the correct Guess? Enter " + tmpStr))
 
             if nSuccess >= 1 and nSuccess <= 4:
                 bSuccess[nSuccess] = True
