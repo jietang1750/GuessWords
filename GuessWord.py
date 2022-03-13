@@ -136,6 +136,19 @@ def scoreWord(word,wChar):
                 score += 1
     return score
 
+def scoreWordReverse(word,wChar):
+    tmpWord = ''
+    score = 0
+    for tmpChar in word:
+        if tmpChar not in tmpWord:
+            tmpWord = tmpWord + tmpChar
+            if tmpChar in wChar:
+                score += 0
+            #if tmpChar in 'etaionshr':
+            if tmpChar in 'xqzj':
+                score += 1
+    return score
+
 def inChar (msg,myChar):
     tmpChar = input(msg)
     tmpLen = len(tmpChar)
@@ -153,6 +166,15 @@ def inChar (msg,myChar):
             return(myChar)
     else:
         return(myChar)
+
+def printWordList(wordList,maxWords):
+    n = min (len(wordList), maxWords)
+    line = ''
+    for i in range(n):
+        line = line + wordList[i]['guess'] + ':' + str(wordList[i]['score'])
+        if i < n-1:
+            line = line +  ', '
+    return line
 
 def guessWord(totGames,totRounds,strGame,dict5):
     wCharDefault = 'qypfgjzxbn'
@@ -178,6 +200,8 @@ def guessWord(totGames,totRounds,strGame,dict5):
     bSuccess = {}
     for nQuard in range(1, totGames + 1):
         bSuccess[nQuard] = False
+
+    totGamesLeft = totGames
 
     for k in range (n,totRounds + 1):
         newList = []
@@ -207,7 +231,8 @@ def guessWord(totGames,totRounds,strGame,dict5):
 
                 # print(k, nQuard,pool[nQuard])
                 # print(k, nQuard, confirmedChars[nQuard])
-
+        nLenGuess = {}
+        wordList = {}
         for nQuard in range(1, totGames + 1):
             if not bSuccess[nQuard]:
                 if k > 1:
@@ -217,53 +242,74 @@ def guessWord(totGames,totRounds,strGame,dict5):
                     for n in range(1,nQuard):
                         if pool[n] == pool[nQuard] and confirmedChars[n] == confirmedChars[nQuard]:
                             bGuess = False
-                            wordList = []
+                            wordList[nQuard] = wordList[n]
+                            print("Guessing " + str(nQuard) + "...")
                             break
                     if bGuess:
                         print("Guessing " + str(nQuard) + "...")
-                        wordList = clue(pool[nQuard],confirmedChars[nQuard],dict5)
+                        wordList[nQuard] = clue(pool[nQuard],confirmedChars[nQuard],dict5)
                         #dict5 = list2dict(wordList)
-                        nLen = len(wordList)
-                        print (nLen, "words found.")
                     i=0
                     tmpWord = {}
-                    for word in wordList:
+                    tmpList = []
+                    nLenGuess[nQuard] = len(wordList[nQuard])
+                    for word in wordList[nQuard]:
                         i += 1
                         score = scoreWord(word,wChar)
-                        if nLen <= 2:
-                            score = 51 - nLen
+                        #score = scoreWordReverse(word,wChar)
+                        if nLenGuess[nQuard] <= 2:
+                            score = 51 - nLenGuess[nQuard]
                             # print (word, score)
                         tmpWord = {"score": score,"guess":word}
-                        newList.append(tmpWord)
-        i=0
-        for singleWord in sorted(newList,key = lambda  i:(-i['score'],i['guess'])):
-            print(i+1,singleWord["guess"], singleWord["score"])
-            i = i+1
-            if i >= 5:
-                break
+                        tmpList.append(tmpWord)
+                        if bGuess:
+                            newList.append(tmpWord)
+                    print(nLenGuess[nQuard], "words found.")
+                    print(printWordList(sorted(tmpList,key = lambda  i:(-i['score'],i['guess'])),5))
+        #i=0
+        #for singleWord in sorted(newList,key = lambda  i:(-i['score'],i['guess'])):
+        #    print(i+1,singleWord["guess"], singleWord["score"])
+        #    i = i+1
+        #    if i >= 15:
+        #        break
+        if k > 1:
+            print()
+            print('Suggested Guesses:')
+            print(printWordList(sorted(newList,key = lambda  i:(-i['score'],i['guess'])),15))
 
         if k <= totRounds:
             tmpStr = ''
             if totGames == 1:
                 tmpStr = ' 1.'
             else:
+                n = 0
                 for i in bSuccess.keys():
                     if bSuccess[i] == False:
                         tmpStr = tmpStr + str(i)
-                        if i == totGames - 1:
+                        n += 1
+                        if n == totGamesLeft - 1:
                             tmpStr = tmpStr + ' or '
-                        elif i == totGames:
+                        elif n == totGamesLeft:
                             tmpStr = tmpStr + '.'
                         else:
                             tmpStr = tmpStr + ', '
             guessWord = input ("Round " + str(k) +" Guess: ")
-            nSuccess = int(input("Is it the correct Guess? Enter " + tmpStr))
+            print ('Games Left:',totGamesLeft)
+            tmpCorrect = input("Is it the correct Guess? Enter " + tmpStr)
+            if tmpCorrect == '1' or tmpCorrect == '2' or tmpCorrect == '3' or tmpCorrect == '4':
+                nSuccess = int(tmpCorrect)
+            else:
+                nSuccess = 0
 
             if nSuccess >= 1 and nSuccess <= 4:
                 bSuccess[nSuccess] = True
             bSuccessCombined = True
+            totGamesLeft = totGames
             for nQuard in range (1,totGames + 1):
-               bSuccessCombined = bSuccessCombined and bSuccess[nQuard]
+                bSuccessCombined = bSuccessCombined and bSuccess[nQuard]
+                if bSuccess[nQuard]:
+                    totGamesLeft = totGamesLeft -1
+
 
             if bSuccessCombined:
                 break
