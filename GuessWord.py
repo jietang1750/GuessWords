@@ -65,13 +65,11 @@ def list2dict(wordList):
         wordDict[word[0]].append(word)
     return wordDict
 
-def formPool(whiteChar,yellowChar,greenChar):
+def formPool(whiteChar,yPool,gPool):
     pool=[]
     conChar = ''
-    yPool = decompChar(yellowChar)
-    gPool = decompChar(greenChar)
-    # print ("gPool",gPool)
-    # print ("yPool",yPool)
+    #print ("yPool",yPool)
+    #print ("gPool",gPool)
     for k in range (1,6):
         tmpPool1 = whiteChar
         for n in yPool.keys():
@@ -98,6 +96,14 @@ def formPool(whiteChar,yellowChar,greenChar):
         pool.append(tmpPool1)
 
     return (pool,conChar)
+
+def poolDict2poolChar(poolDict):
+    tmpChar = ''
+    if poolDict:
+        for i in sorted(poolDict):
+            tmpChar = tmpChar + str(i)
+            tmpChar = tmpChar + poolDict[i]
+    return (tmpChar)
 
 def decompChar(strColChar):
     colChar ={}
@@ -149,8 +155,38 @@ def scoreWordReverse(word,wChar):
                 score += 1
     return score
 
-def inChar (msg,myChar):
-    tmpChar = input(msg)
+def checkInput (guessWord,myChar):
+    msg = ''
+    bCheck = True
+    if myChar == '':
+        bCheck = True
+        msg = 'No matched letters.'
+        return (bCheck,msg)
+    elif myChar[0].isnumeric():
+        charDict = decompChar(myChar)
+        for i in sorted(charDict):
+            if guessWord[i-1] != charDict[i]:
+                msg = msg + 'position ' + str(i) + ' does not match. \n'
+                bCheck = False
+        return (bCheck,msg)
+    elif myChar[0] == 'z':
+        bCheck = True
+        msg = 'This is a correction entry.'
+        return (bCheck,msg)
+    else:
+        bCheck = False
+        msg = 'Unknown Entry Format.  Please retry.'
+        return (bCheck,msg)
+
+
+def inChar (msg,myChar,guessWord):
+    bCheck = False
+    while bCheck == False:
+        tmpChar = input(msg)
+        (bCheck,msgCheck) = checkInput(guessWord,tmpChar)
+        if bCheck == False:
+            print(msgCheck)
+            print ("Please re-enter:")
     tmpLen = len(tmpChar)
     if tmpLen > 0:
         if tmpChar[0].isnumeric() or tmpChar[0] == 'z':
@@ -193,6 +229,8 @@ def guessWord(totGames,totRounds,strGame,dict5):
     pool = {}
     confirmedChars = {}
 
+    myGuessWord = ''
+
     for nQuard in range (1,totGames + 1):
         yChar[nQuard] = ''
         gChar[nQuard] = ''
@@ -209,9 +247,9 @@ def guessWord(totGames,totRounds,strGame,dict5):
             if not bSuccess[nQuard]:
                 if k > 1:
                     msg = str(nQuard) + ", Yellow Tiles, like, " + yChar[nQuard] + ":"
-                    yCharIn = inChar(msg, yChar[nQuard])
+                    yCharIn = inChar(msg, yChar[nQuard],myGuessWord)
                     msg = str(nQuard) + ", Green Tiles, like, " + gChar[nQuard] + ":"
-                    gCharIn = inChar(msg, gChar[nQuard])
+                    gCharIn = inChar(msg, gChar[nQuard],myGuessWord)
                 else:
                     yCharIn = ''
                     gCharIn = ''
@@ -227,7 +265,11 @@ def guessWord(totGames,totRounds,strGame,dict5):
                 #    yChar = yCharDefault
                 #if gChar == '':
                 #    gChar = gCharDefault
-                (pool[nQuard],confirmedChars[nQuard]) = formPool(wChar,yChar[nQuard],gChar[nQuard])
+                yPool = decompChar(yChar[nQuard])
+                gPool = decompChar(gChar[nQuard])
+                yChar[nQuard] = poolDict2poolChar(yPool)
+                gChar[nQuard] = poolDict2poolChar(gPool)
+                (pool[nQuard],confirmedChars[nQuard]) = formPool(wChar,yPool,gPool)
 
                 # print(k, nQuard,pool[nQuard])
                 # print(k, nQuard, confirmedChars[nQuard])
@@ -293,7 +335,7 @@ def guessWord(totGames,totRounds,strGame,dict5):
                             tmpStr = tmpStr + '.'
                         else:
                             tmpStr = tmpStr + ', '
-            guessWord = input ("Round " + str(k) +" Guess: ")
+            myGuessWord = input ("Round " + str(k) +" Guess: ")
             print ('Games Left:',totGamesLeft)
             tmpCorrect = input("Is it the correct Guess? Enter " + tmpStr)
             if tmpCorrect == '1' or tmpCorrect == '2' or tmpCorrect == '3' or tmpCorrect == '4':
@@ -314,6 +356,6 @@ def guessWord(totGames,totRounds,strGame,dict5):
             if bSuccessCombined:
                 break
             else:
-                wChar = removeCharFromWChar(wChar,guessWord)
+                wChar = removeCharFromWChar(wChar,myGuessWord)
                 # print(wChar)
     return(bSuccessCombined)
