@@ -181,12 +181,15 @@ def checkInput (guessWord,myChar):
 
 def inChar (msg,myChar,guessWord):
     bCheck = False
-    while bCheck == False:
+    if guessWord:
+        while bCheck == False:
+            tmpChar = input(msg)
+            (bCheck,msgCheck) = checkInput(guessWord,tmpChar)
+            if bCheck == False:
+                print(msgCheck)
+                print ("Please re-enter:")
+    else:
         tmpChar = input(msg)
-        (bCheck,msgCheck) = checkInput(guessWord,tmpChar)
-        if bCheck == False:
-            print(msgCheck)
-            print ("Please re-enter:")
     tmpLen = len(tmpChar)
     if tmpLen > 0:
         if tmpChar[0].isnumeric() or tmpChar[0] == 'z':
