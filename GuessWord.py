@@ -22,7 +22,7 @@ def isWord(word,dictionary):
     else:
         return False
 
-def clue(pool,confirmedChars,dictionary):
+def clue(pool,confirmedChars,redundantCharsDict, dictionary):
     word = ''
     wordList = []
     i = 0
@@ -47,6 +47,11 @@ def clue(pool,confirmedChars,dictionary):
                             if (tmpChar not in word) and bConfirm:
                                 bConfirm = False
                                 # print("no", i1, i2, i3, i4, i5, word)
+                                break
+                        for tmpChar in redundantCharsDict.keys():
+                            nRedundant = redundantCharsDict[tmpChar]
+                            if word.count(tmpChar) != nRedundant:
+                                bConfirm = False
                                 break
                         if bConfirm:
                             bWord = isWord(word, dictionary)
@@ -155,6 +160,23 @@ def scoreWordReverse(word,wChar):
                 score += 1
     return score
 
+def checkRedundantChar(charDict,redundantCharDict):
+    tmpCharDict = {}
+    for i in charDict.keys():
+        tmpChar = charDict[i]
+        if tmpChar not in tmpCharDict.keys():
+            tmpCharDict[tmpChar] = 1
+        else:
+            tmpCharDict[tmpChar] += 1
+    for tmpChar in tmpCharDict :
+        if tmpChar not in redundantCharDict.keys():
+            if tmpCharDict[tmpChar] >= 2:
+                redundantCharDict[tmpChar] = tmpCharDict[tmpChar]
+        elif tmpCharDict[tmpChar] > redundantCharDict[tmpChar]:
+            redundantCharDict[tmpChar] = tmpCharDict[tmpChar]
+    print(redundantCharDict)
+    return(redundantCharDict)
+
 def checkInput (guessWord,myChar):
     msg = ''
     bCheck = True
@@ -179,8 +201,9 @@ def checkInput (guessWord,myChar):
         return (bCheck,msg)
 
 
-def inChar (msg,myChar,guessWord):
+def inChar (msg,guessWord):
     bCheck = False
+    tmpChar = ''
     if guessWord:
         while bCheck == False:
             tmpChar = input(msg)
@@ -190,21 +213,28 @@ def inChar (msg,myChar,guessWord):
                 print ("Please re-enter:")
     else:
         tmpChar = input(msg)
+    return(tmpChar)
+
+def combineChar(tmpChar,myChar):
     tmpLen = len(tmpChar)
     if tmpLen > 0:
         if tmpChar[0].isnumeric() or tmpChar[0] == 'z':
             if tmpChar[0:2] == 'zz':
+                bCorrection = True
                 if tmpLen > 2:
                     myChar = tmpChar[2-len(tmpChar):]
                 else:
                     myChar = ''
             else:
+                bCorrection = False
                 myChar = myChar + tmpChar
-            return (myChar)
+            return (myChar,bCorrection)
         else:
-            return(myChar)
+            bCorrection = False
+            return(myChar,bCorrection)
     else:
-        return(myChar)
+        bCorrection = False
+        return(myChar,bCorrection)
 
 def printWordList(wordList,maxWords):
     n = min (len(wordList), maxWords)
@@ -231,6 +261,7 @@ def guessWord(totGames,totRounds,strGame,dict5):
     gChar = {}
     pool = {}
     confirmedChars = {}
+    redundantChars = {}
 
     myGuessWord = ''
 
@@ -246,16 +277,23 @@ def guessWord(totGames,totRounds,strGame,dict5):
 
     for k in range (n,totRounds + 1):
         newList = []
+        yCharTmp = ''
+        gCharTmp = ''
         for nQuard in range (1,totGames + 1):
             if not bSuccess[nQuard]:
                 if k > 1:
                     msg = str(nQuard) + ", Yellow Tiles, like, " + yChar[nQuard] + ":"
-                    yCharIn = inChar(msg, yChar[nQuard],myGuessWord)
+                    yCharTmp = inChar(msg,myGuessWord)
+                    (yCharIn,bCor) = combineChar(yCharTmp, yChar[nQuard])
+                    #print(yCharIn,bCor)
                     msg = str(nQuard) + ", Green Tiles, like, " + gChar[nQuard] + ":"
-                    gCharIn = inChar(msg, gChar[nQuard],myGuessWord)
+                    gCharTmp = inChar(msg,myGuessWord)
+                    (gCharIn,bCor) = combineChar(gCharTmp, gChar[nQuard])
+                    #print(gCharIn,bCor)
                 else:
                     yCharIn = ''
                     gCharIn = ''
+                    bCor = False
                 yChar[nQuard] = yCharIn
                 gChar[nQuard] = gCharIn
 
@@ -270,6 +308,13 @@ def guessWord(totGames,totRounds,strGame,dict5):
                 #    gChar = gCharDefault
                 yPool = decompChar(yChar[nQuard])
                 gPool = decompChar(gChar[nQuard])
+                yCharRedDict = decompChar(yCharTmp)
+                if not bCor :
+                    if nQuard not in redundantChars.keys():
+                        redundantChars[nQuard] = {}
+                    tmpRedundantChars = redundantChars[nQuard]
+                    redundantChars[nQuard] = checkRedundantChar(yCharRedDict, tmpRedundantChars)
+
                 yChar[nQuard] = poolDict2poolChar(yPool)
                 gChar[nQuard] = poolDict2poolChar(gPool)
                 (pool[nQuard],confirmedChars[nQuard]) = formPool(wChar,yPool,gPool)
@@ -292,7 +337,7 @@ def guessWord(totGames,totRounds,strGame,dict5):
                             break
                     if bGuess:
                         print("Guessing " + str(nQuard) + "...")
-                        wordList[nQuard] = clue(pool[nQuard],confirmedChars[nQuard],dict5)
+                        wordList[nQuard] = clue(pool[nQuard],confirmedChars[nQuard],redundantChars[nQuard], dict5)
                         #dict5 = list2dict(wordList)
                     i=0
                     tmpWord = {}
@@ -311,6 +356,9 @@ def guessWord(totGames,totRounds,strGame,dict5):
                             newList.append(tmpWord)
                     print(nLenGuess[nQuard], "words found.")
                     print(printWordList(sorted(tmpList,key = lambda  i:(-i['score'],i['guess'])),5))
+                    if nLenGuess[nQuard] == 0:
+                        print(yChar[nQuard],gChar[nQuard])
+                        print(pool[nQuard],confirmedChars[nQuard],redundantChars[nQuard])
         #i=0
         #for singleWord in sorted(newList,key = lambda  i:(-i['score'],i['guess'])):
         #    print(i+1,singleWord["guess"], singleWord["score"])
